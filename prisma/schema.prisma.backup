@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Kullanıcılar (Admin, Editor, Writer)
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  hashedPassword    String
+  role              Role      @default(WRITER)
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
+  image             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  articles          Article[]
+  sessions          Session[]
+  
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+// Yazarlar (Public profiller)
+model Writer {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  role        String    // "Şair", "Eleştirmen", vb.
+  bio         String
+  fullBio     String    @db.Text
+  image       String
+  birthYear   Int?
+  education   String?
+  awards      String[]
+  socialMedia Json?
+  articleCount Int      @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  articles    Article[]
+  
+  @@map("writers")
+}
+
+// Kategoriler
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  articles    Article[]
+  
+  @@map("categories")
+}
+
+// Yazılar/Şiirler
+model Article {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  title         String
+  excerpt       String
+  content       String        @db.Text
+  featuredImage String?       @db.Text
+  status        ArticleStatus @default(DRAFT)
+  publishedAt   DateTime?
+  readTime      String?
+  views         Int           @default(0)
+  
+  authorId      String
+  author        User          @relation(fields: [authorId], references: [id])
+  
+  writerId      String?
+  writer        Writer?       @relation(fields: [writerId], references: [id])
+  
+  categoryId    String
+  category      Category      @relation(fields: [categoryId], references: [id])
+  
+  tags          Tag[]
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+  @@map("articles")
+}
+
+// Etiketler
+model Tag {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  articles  Article[]
+  createdAt DateTime  @default(now())
+  
+  @@map("tags")
+}
+
+// Medya
+model Media {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  url         String
+  thumbnailUrl String?
+  mimeType    String
+  size        Int
+  width       Int?
+  height      Int?
+  altText     String?
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+  
+  @@map("media")
+}
+
+// Makale Görüntülenmeleri (IP bazlı)
+model ArticleView {
+  id        String   @id @default(cuid())
+  articleId String
+  ipAddress String
+  userAgent String?
+  viewedAt  DateTime @default(now())
+  
+  @@unique([articleId, ipAddress])
+  @@index([articleId])
+  @@map("article_views")
+}
+
+// Site Ayarları
+model Settings {
+  id                String   @id @default(cuid())
+  siteTitle         String   @default("YurtSever Dergi")
+  siteDescription   String   @default("Edebiyat ve kültür dergisi")
+  contactEmail      String   @default("info@yurtsever.com")
+  articlesPerPage   Int      @default(12)
+  maintenanceMode   Boolean  @default(false)
+  maintenanceMessage String? @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("settings")
+}
+
+// Enums
+enum Role {
+  ADMIN
+  EDITOR
+  WRITER
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}

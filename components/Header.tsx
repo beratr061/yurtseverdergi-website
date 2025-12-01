@@ -1,0 +1,104 @@
+'use client';
+
+import Link from 'next/link';
+import { useState } from 'react';
+import { Menu, X, Search, PenTool } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
+
+export function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navigation = [
+    { name: 'Şiir', href: '/siir' },
+    { name: 'Yazarlar', href: '/yazarlar' },
+    { name: 'Poetika', href: '/poetika' },
+    { name: 'Söyleşi', href: '/soylesi' },
+    { name: 'Eleştiri', href: '/elestiri' },
+    { name: 'Hakkımızda', href: '/hakkimizda' },
+  ];
+
+  return (
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-20 items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2 group">
+            <PenTool className="h-8 w-8 text-primary-600 group-hover:text-primary-500 transition-colors" />
+            <span className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">YurtSever</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex lg:items-center lg:space-x-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-500 transition-colors relative group"
+              >
+                {item.name}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all group-hover:w-full" />
+              </Link>
+            ))}
+          </div>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-4">
+            <Link
+              href="/arama"
+              aria-label="Ara"
+              className="p-2 text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-neutral-100 transition-colors"
+            >
+              <Search className="h-5 w-5" />
+            </Link>
+
+            <ThemeToggle />
+            
+            <Link
+              href="/iletisim"
+              className="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Bize Yazın
+            </Link>
+
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              className="lg:hidden p-2 text-neutral-700 dark:text-neutral-300"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menüyü aç"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden py-4 space-y-2 border-t border-neutral-200 dark:border-neutral-800">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="block px-4 py-2 text-base font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+            <Link
+              href="/iletisim"
+              className="block mx-4 mt-4 px-4 py-2 text-center text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Bize Yazın
+            </Link>
+          </div>
+        )}
+      </nav>
+    </header>
+  );
+}
