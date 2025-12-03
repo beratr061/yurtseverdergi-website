@@ -29,11 +29,11 @@ interface UserFormProps {
     name: string;
     email: string;
     role: string;
-    slug?: string;
-    bio?: string;
-    image?: string;
-    fullBio?: string;
-    education?: string;
+    slug?: string | null;
+    bio?: string | null;
+    image?: string | null;
+    fullBio?: string | null;
+    education?: string | null;
     awards?: any;
   };
 }

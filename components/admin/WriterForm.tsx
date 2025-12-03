@@ -10,14 +10,14 @@ interface WriterFormProps {
   writer?: {
     id: string;
     name: string;
-    slug: string;
+    slug?: string | null;
     role: string;
-    bio: string;
-    fullBio: string;
-    image: string;
-    birthYear: number | null;
-    education: string | null;
-    awards: string[];
+    bio?: string | null;
+    fullBio?: string | null;
+    image?: string | null;
+    birthYear?: number | null;
+    education?: string | null;
+    awards?: string[];
   };
 }
 

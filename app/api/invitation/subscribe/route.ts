@@ -1,24 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-
-/**
- * Email validation regex - RFC 5322 compliant basic pattern
- */
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/**
- * Validates email format
- */
-export function isValidEmail(email: string): boolean {
-  if (!email || typeof email !== 'string') {
-    return false;
-  }
-  const trimmed = email.trim();
-  if (trimmed.length === 0 || trimmed.length > 254) {
-    return false;
-  }
-  return EMAIL_REGEX.test(trimmed);
-}
+import { isValidEmail } from '@/lib/validation';
 
 interface SubscribeRequest {
   email: string;

@@ -18,7 +18,7 @@ interface Article {
     id: string;
     name: string;
     email: string;
-    image?: string;
+    image?: string | null;
   };
   category: {
     id: string;

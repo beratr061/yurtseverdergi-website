@@ -10,8 +10,9 @@ interface Writer {
   name: string;
   slug: string;
   role: string;
-  image: string;
-  _count: {
+  image: string | null;
+  articleCount?: number;
+  _count?: {
     articles: number;
   };
 }
@@ -78,7 +79,7 @@ export function WriterList({ writers }: WriterListProps) {
           <div className="p-6">
             <div className="flex items-start space-x-4">
               <img
-                src={writer.image}
+                src={writer.image || '/images/default-avatar.png'}
                 alt={writer.name}
                 className="w-16 h-16 rounded-full object-cover ring-2 ring-neutral-200 dark:ring-neutral-700"
               />
@@ -90,7 +91,7 @@ export function WriterList({ writers }: WriterListProps) {
                   {writer.role}
                 </p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
-                  {writer.articleCount || 0} yazı
+                  {writer.articleCount ?? writer._count?.articles ?? 0} yazı
                 </p>
               </div>
             </div>

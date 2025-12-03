@@ -7,6 +7,7 @@ import { auth } from '@/auth';
  */
 export interface InvitationSettings {
   siteTitle: string;
+  contactEmail?: string | null;
   invitationMode: boolean;
   invitationHeadline?: string | null;
   invitationDescription?: string | null;
@@ -55,6 +56,7 @@ export async function checkInvitationMode(): Promise<InvitationCheckResult> {
     // Extract invitation-related settings
     const invitationSettings: InvitationSettings = {
       siteTitle: settings.siteTitle,
+      contactEmail: settings.contactEmail ?? null,
       invitationMode: settings.invitationMode ?? false,
       invitationHeadline: settings.invitationHeadline ?? null,
       invitationDescription: settings.invitationDescription ?? null,
@@ -132,6 +134,7 @@ export async function getInvitationSettings(): Promise<InvitationSettings | null
     
     return {
       siteTitle: settings.siteTitle,
+      contactEmail: settings.contactEmail ?? null,
       invitationMode: settings.invitationMode ?? false,
       invitationHeadline: settings.invitationHeadline ?? null,
       invitationDescription: settings.invitationDescription ?? null,

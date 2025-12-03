@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getWriters, createWriter } from '@/lib/db';
+import { getWriters, createWriter, updateWriter } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {

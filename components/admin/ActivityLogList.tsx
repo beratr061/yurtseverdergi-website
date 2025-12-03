@@ -20,10 +20,10 @@ interface ActivityLog {
   userName: string;
   action: string;
   entityType: string;
-  entityId?: string;
-  entityTitle?: string;
-  details?: string;
-  ipAddress?: string;
+  entityId?: string | null;
+  entityTitle?: string | null;
+  details?: string | null;
+  ipAddress?: string | null;
   createdAt: Date;
 }
 
