@@ -35,14 +35,19 @@ export const authConfig = {
     },
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
+        // Sadece gerekli alanları tut, token boyutunu küçük tut
+        return {
+          sub: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.sub as string;
         session.user.role = token.role as string;
       }
       return session;

@@ -69,13 +69,19 @@ export default function LoginPage() {
         redirect: false,
       });
 
+      console.log('SignIn result:', result);
+
       if (result?.error) {
-        setError('Email veya şifre hatalı');
+        setError(result.error === 'CredentialsSignin' ? 'Email veya şifre hatalı' : result.error);
         recaptchaRef.current?.reset();
         setRecaptchaToken(null);
-      } else {
+      } else if (result?.ok) {
         router.push('/admin/dashboard');
         router.refresh();
+      } else {
+        setError('Bir hata oluştu');
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
       }
     } catch (err) {
       if (err instanceof z.ZodError) {

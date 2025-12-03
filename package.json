@@ -14,7 +14,9 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "migrate:images": "node scripts/migrate-base64-images.js",
+    "optimize:images": "node scripts/optimize-existing-images.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -47,6 +49,7 @@
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.65.0",
     "react-hot-toast": "^2.6.0",
+    "sharp": "^0.33.5",
     "zod": "^4.1.12",
     "zustand": "^5.0.8"
   },

@@ -35,9 +35,9 @@ export function ImageCropper({ image, onComplete, onCancel, aspect = 1, cropShap
 
         setLoading(true);
         try {
-            // Get cropped image as base64
-            const croppedImageBase64 = await getCroppedImgAsBase64(image, croppedAreaPixels);
-            onComplete(croppedImageBase64);
+            // Get cropped image as blob and upload to server
+            const croppedImageUrl = await getCroppedImgAndUpload(image, croppedAreaPixels);
+            onComplete(croppedImageUrl);
         } catch (error) {
             console.error('Crop error:', error);
             alert('Görsel kırpılamadı');
@@ -46,7 +46,7 @@ export function ImageCropper({ image, onComplete, onCancel, aspect = 1, cropShap
         }
     };
 
-    const getCroppedImgAsBase64 = async (
+    const getCroppedImgAndUpload = async (
         imageSrc: string,
         pixelCrop: any
     ): Promise<string> => {
@@ -58,12 +58,15 @@ export function ImageCropper({ image, onComplete, onCancel, aspect = 1, cropShap
             throw new Error('No 2d context');
         }
 
-        // Boyut sınırlaması (max 1920x1080)
+        // Agresif boyut sınırlaması - web için optimize
+        // Avatar: max 400x400, Kapak görseli: max 1200x800
         let width = pixelCrop.width;
         let height = pixelCrop.height;
         
-        const maxWidth = 1920;
-        const maxHeight = 1080;
+        // Kare görsel (avatar) için daha küçük limit
+        const isSquare = aspect === 1;
+        const maxWidth = isSquare ? 400 : 1200;
+        const maxHeight = isSquare ? 400 : 800;
         
         if (width > maxWidth || height > maxHeight) {
             const ratio = Math.min(maxWidth / width, maxHeight / height);
@@ -86,16 +89,38 @@ export function ImageCropper({ image, onComplete, onCancel, aspect = 1, cropShap
             height
         );
 
-        // WebP formatında döndür (daha küçük dosya boyutu)
-        // Fallback: JPEG (eski tarayıcılar için)
-        let dataUrl = canvas.toDataURL('image/webp', 0.85);
-        
-        // WebP desteklenmiyorsa JPEG kullan
-        if (!dataUrl.startsWith('data:image/webp')) {
-            dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        }
-        
-        return dataUrl;
+        // Canvas'ı blob'a çevir ve sunucuya yükle
+        // Kalite: 0.75 (iyi denge - boyut vs kalite)
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    reject(new Error('Canvas to blob failed'));
+                    return;
+                }
+
+                try {
+                    const file = new File([blob], `cropped-${Date.now()}.webp`, { type: 'image/webp' });
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Yükleme başarısız');
+                    }
+
+                    const data = await response.json();
+                    resolve(data.url);
+                } catch (error) {
+                    reject(error);
+                }
+            }, 'image/webp', 0.75); // Kalite düşürüldü: 0.85 -> 0.75
+        });
     };
 
     return (

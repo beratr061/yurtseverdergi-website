@@ -50,9 +50,6 @@ export default async function Home() {
     .sort((a, b) => b.views - a.views)
     .slice(0, 4);
 
-  // LCP image preload için ilk hero image
-  const firstHeroImage = heroArticles[0]?.featuredImage || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&h=800&fit=crop';
-
   // Database bağlantısı yoksa uyarı göster
   const hasNoData = allArticles.length === 0 && writers.length === 0;
 
@@ -88,7 +85,7 @@ export default async function Home() {
             logo={`${siteUrl}/logo.png`}
             description="Edebiyat ve Kültür Dergisi - Şiir, eleştiri, söyleşi ve poetika içerikleri"
           />
-          <link rel="preload" as="image" href={firstHeroImage} fetchPriority="high" />
+          {/* Next.js Image priority={true} otomatik preload yapar, manuel preload gereksiz */}
           
           <Hero articles={heroArticles} />
           <FeaturedArticles articles={featuredArticles} />

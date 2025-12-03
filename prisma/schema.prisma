@@ -16,6 +16,9 @@ model User {
   role           Role      @default(POET)
   slug           String?   @unique
   bio            String?
+  fullBio        String?
+  education      String?
+  awards         String[]
   image          String?
   articleCount   Int       @default(0)
   createdAt      DateTime  @default(now())

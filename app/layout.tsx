@@ -6,11 +6,15 @@ import { ToastProvider } from "@/components/ToastProvider";
 const geist = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap", // Font yüklenene kadar sistem fontu göster (CLS önleme)
+  preload: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false, // Mono font kritik değil, lazy load
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yurtsever.com";

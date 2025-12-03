@@ -66,15 +66,16 @@ export function Hero({ articles }: HeroProps) {
                     : 'translate-x-full'
                   }`}
               >
-                {/* Background Image */}
+                {/* Background Image - Only first slide has priority, others lazy load */}
                 <Image
                   src={imageUrl}
                   alt={article.title}
                   fill
                   priority={index === 0}
+                  loading={index === 0 ? 'eager' : 'lazy'}
                   className="object-cover"
                   sizes="100vw"
-                  quality={85}
+                  quality={75}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
 
@@ -133,16 +134,22 @@ export function Hero({ articles }: HeroProps) {
             </button>
           </div>
 
-          {/* Slide Indicators */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 pointer-events-auto">
+          {/* Slide Indicators - Minimum 44x44px touch target for accessibility */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-1 pointer-events-auto">
             {articles.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`h-1.5 rounded-full transition-all ${index === currentSlide ? 'w-8 bg-white' : 'w-1.5 bg-white/50'
-                  }`}
+                className="p-3 group"
                 aria-label={`Slayt ${index + 1}`}
-              />
+                aria-current={index === currentSlide ? 'true' : 'false'}
+              >
+                <span 
+                  className={`block h-2 rounded-full transition-all ${
+                    index === currentSlide ? 'w-8 bg-white' : 'w-2 bg-white/50 group-hover:bg-white/70'
+                  }`}
+                />
+              </button>
             ))}
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -13,6 +13,11 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(value);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync preview with value prop
+  useEffect(() => {
+    setPreview(value);
+  }, [value]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,18 +38,27 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     setUploading(true);
 
     try {
-      // Base64'e çevir
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setPreview(base64String);
-        onChange(base64String);
-        toast.success('Resim yüklendi');
-      };
-      reader.readAsDataURL(file);
+      // Dosyayı sunucuya yükle (Base64 yerine)
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Yükleme başarısız');
+      }
+
+      const data = await response.json();
+      setPreview(data.url);
+      onChange(data.url);
+      toast.success('Resim yüklendi');
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Resim yüklenirken hata oluştu');
+      toast.error(error instanceof Error ? error.message : 'Resim yüklenirken hata oluştu');
     } finally {
       setUploading(false);
     }
