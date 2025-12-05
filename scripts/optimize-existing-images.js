@@ -1,92 +1,91 @@
-/**
- * Mevcut Görselleri Optimize Etme Script'i
- * 
- * Bu script /public/uploads klasöründeki büyük görselleri
- * sharp kullanarak optimize eder.
- * 
- * Kullanım: npm run optimize:images
- */
-
+// Script: Mevcut görselleri optimize et
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
-const MAX_WIDTH = 1200;
-const MAX_HEIGHT = 800;
-const QUALITY = 80;
-const SIZE_THRESHOLD = 200 * 1024; // 200KB üzeri dosyaları optimize et
+
+// Optimizasyon ayarları
+const WEBP_OPTIONS = {
+  quality: 82,
+  effort: 6,
+  smartSubsample: true,
+  nearLossless: false,
+  alphaQuality: 90,
+};
 
 async function optimizeImages() {
-  console.log('🚀 Görsel optimizasyonu başlatılıyor...\n');
-
-  if (!fs.existsSync(UPLOAD_DIR)) {
-    console.log('❌ Upload klasörü bulunamadı');
-    return;
-  }
-
-  const files = fs.readdirSync(UPLOAD_DIR);
-  const imageFiles = files.filter(f => 
-    /\.(jpg|jpeg|png|webp|gif)$/i.test(f) && f !== '.gitkeep'
+  const files = fs.readdirSync(UPLOAD_DIR).filter(f => 
+    f.endsWith('.webp') || f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png')
   );
 
-  console.log(`📊 ${imageFiles.length} adet görsel bulundu\n`);
+  console.log(`${files.length} görsel bulundu.\n`);
 
-  let optimizedCount = 0;
-  let skippedCount = 0;
-  let totalSaved = 0;
+  let totalOriginal = 0;
+  let totalOptimized = 0;
 
-  for (const filename of imageFiles) {
-    const filepath = path.join(UPLOAD_DIR, filename);
-    const stats = fs.statSync(filepath);
-    
-    // Küçük dosyaları atla
-    if (stats.size < SIZE_THRESHOLD) {
-      console.log(`⏭️  ${filename} - ${(stats.size / 1024).toFixed(1)}KB (zaten küçük)`);
-      skippedCount++;
-      continue;
-    }
+  for (const file of files) {
+    const filepath = path.join(UPLOAD_DIR, file);
+    const stat = fs.statSync(filepath);
+    const originalSize = stat.size;
+    totalOriginal += originalSize;
 
     try {
-      const originalSize = stats.size;
+      // Görseli oku ve metadata al
+      const image = sharp(filepath);
+      const metadata = await image.metadata();
+
+      // Boyut limitleri
+      let maxWidth = 1600;
+      let maxHeight = 1600;
       
-      // Yeni dosya adı (webp formatında)
-      const newFilename = filename.replace(/\.[^/.]+$/, '.webp');
-      const newFilepath = path.join(UPLOAD_DIR, newFilename);
-
-      // Sharp ile optimize et
-      await sharp(filepath)
-        .resize(MAX_WIDTH, MAX_HEIGHT, {
-          fit: 'inside',
-          withoutEnlargement: true,
-        })
-        .webp({ quality: QUALITY })
-        .toFile(newFilepath);
-
-      const newStats = fs.statSync(newFilepath);
-      const savedBytes = originalSize - newStats.size;
-      totalSaved += savedBytes;
-
-      console.log(`✅ ${filename}`);
-      console.log(`   ${(originalSize / 1024).toFixed(1)}KB -> ${(newStats.size / 1024).toFixed(1)}KB`);
-      console.log(`   Tasarruf: ${(savedBytes / 1024).toFixed(1)}KB\n`);
-
-      // Eski dosyayı sil (eğer farklı isimse)
-      if (filename !== newFilename && fs.existsSync(filepath)) {
-        fs.unlinkSync(filepath);
+      // Avatar ise daha küçük
+      if (file.includes('avatar')) {
+        maxWidth = 400;
+        maxHeight = 400;
       }
 
-      optimizedCount++;
-    } catch (error) {
-      console.error(`❌ Hata (${filename}):`, error.message);
+      // Optimize et
+      const optimizedBuffer = await sharp(filepath)
+        .resize(maxWidth, maxHeight, {
+          fit: 'inside',
+          withoutEnlargement: true,
+          kernel: sharp.kernel.lanczos3,
+        })
+        .webp(WEBP_OPTIONS)
+        .toBuffer();
+
+      const optimizedSize = optimizedBuffer.length;
+      totalOptimized += optimizedSize;
+
+      // Sadece daha küçükse kaydet
+      if (optimizedSize < originalSize) {
+        // Yeni dosya adı (.webp uzantılı)
+        const newFilename = file.replace(/\.(jpg|jpeg|png|webp)$/i, '.webp');
+        const newFilepath = path.join(UPLOAD_DIR, newFilename);
+        
+        fs.writeFileSync(newFilepath, optimizedBuffer);
+        
+        // Eski dosyayı sil (farklı uzantıysa)
+        if (newFilename !== file) {
+          fs.unlinkSync(filepath);
+        }
+
+        const savings = ((1 - optimizedSize / originalSize) * 100).toFixed(1);
+        console.log(`✓ ${file}: ${(originalSize/1024).toFixed(1)}KB -> ${(optimizedSize/1024).toFixed(1)}KB (-%${savings})`);
+      } else {
+        totalOptimized = totalOptimized - optimizedSize + originalSize; // Geri al
+        console.log(`- ${file}: Zaten optimize (${(originalSize/1024).toFixed(1)}KB)`);
+      }
+    } catch (err) {
+      console.error(`✗ ${file}: ${err.message}`);
+      totalOptimized += originalSize;
     }
   }
 
   console.log('\n' + '='.repeat(50));
-  console.log(`✅ Optimize edilen: ${optimizedCount}`);
-  console.log(`⏭️  Atlanan: ${skippedCount}`);
-  console.log(`💾 Toplam tasarruf: ${(totalSaved / 1024 / 1024).toFixed(2)}MB`);
-  console.log('='.repeat(50));
+  console.log(`Toplam: ${(totalOriginal/1024).toFixed(1)}KB -> ${(totalOptimized/1024).toFixed(1)}KB`);
+  console.log(`Tasarruf: ${((1 - totalOptimized/totalOriginal) * 100).toFixed(1)}%`);
 }
 
 optimizeImages().catch(console.error);

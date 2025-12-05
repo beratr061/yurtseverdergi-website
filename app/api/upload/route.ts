@@ -5,11 +5,11 @@ import { existsSync } from 'fs';
 import { auth } from '@/auth';
 import sharp from 'sharp';
 
-// Görsel boyut limitleri
+// Görsel boyut limitleri - maksimum kalite
 const IMAGE_LIMITS = {
-  avatar: { width: 400, height: 400, quality: 80 },
-  cover: { width: 1200, height: 800, quality: 80 },
-  default: { width: 1200, height: 1200, quality: 80 },
+  avatar: { width: 600, height: 600, quality: 95 },
+  cover: { width: 2400, height: 1350, quality: 95 },
+  default: { width: 2400, height: 2400, quality: 95 },
 };
 
 export async function POST(request: NextRequest) {
@@ -51,20 +51,52 @@ export async function POST(request: NextRequest) {
 
     // Görsel tipine göre limit belirle
     const limits = IMAGE_LIMITS[imageType as keyof typeof IMAGE_LIMITS] || IMAGE_LIMITS.default;
+    const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
-    // Sharp ile görsel optimizasyonu
+    // Sharp ile görsel optimizasyonu - max kalite, max 1MB
     let optimizedBuffer: Buffer;
     try {
-      optimizedBuffer = await sharp(inputBuffer)
-        .resize(limits.width, limits.height, {
-          fit: 'inside', // En-boy oranını koru
-          withoutEnlargement: true, // Küçük görselleri büyütme
+      const resizedImage = sharp(inputBuffer).resize(limits.width, limits.height, {
+        fit: 'inside',
+        withoutEnlargement: true,
+        kernel: sharp.kernel.lanczos3,
+      });
+
+      // İlk deneme - yüksek kalite
+      let quality = limits.quality;
+      optimizedBuffer = await resizedImage
+        .clone()
+        .webp({
+          quality,
+          effort: 6,
+          lossless: false,
+          nearLossless: true,
+          smartSubsample: false,
+          alphaQuality: 100,
+          preset: 'photo',
         })
-        .webp({ quality: limits.quality }) // WebP formatına çevir
         .toBuffer();
+
+      // Eğer 1MB'dan büyükse, kaliteyi düşürerek tekrar dene
+      while (optimizedBuffer.length > MAX_FILE_SIZE && quality > 60) {
+        quality -= 5;
+        optimizedBuffer = await resizedImage
+          .clone()
+          .webp({
+            quality,
+            effort: 6,
+            lossless: false,
+            nearLossless: quality > 80, // Düşük kalitede nearLossless kapat
+            smartSubsample: quality <= 80, // Düşük kalitede subsampling aç
+            alphaQuality: Math.max(quality, 80),
+            preset: 'photo',
+          })
+          .toBuffer();
+      }
+
+      console.log(`Final quality: ${quality}, size: ${(optimizedBuffer.length / 1024).toFixed(1)}KB`);
     } catch (sharpError) {
       console.error('Sharp optimization error:', sharpError);
-      // Sharp başarısız olursa orijinal dosyayı kullan
       optimizedBuffer = inputBuffer;
     }
 
@@ -84,8 +116,8 @@ export async function POST(request: NextRequest) {
     const filepath = join(uploadDir, filename);
     await writeFile(filepath, optimizedBuffer);
 
-    // URL'i döndür
-    const url = `/uploads/${filename}`;
+    // URL'i döndür - API route üzerinden sun (production'da static dosyalar build sonrası görünmez)
+    const url = `/api/uploads/${filename}`;
 
     // Boyut bilgisi logla
     const originalSizeKB = (inputBuffer.length / 1024).toFixed(1);

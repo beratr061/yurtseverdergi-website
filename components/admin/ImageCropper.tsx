@@ -58,24 +58,16 @@ export function ImageCropper({ image, onComplete, onCancel, aspect = 1, cropShap
             throw new Error('No 2d context');
         }
 
-        // Agresif boyut sınırlaması - web için optimize
-        // Avatar: max 400x400, Kapak görseli: max 1200x800
-        let width = pixelCrop.width;
-        let height = pixelCrop.height;
-        
-        // Kare görsel (avatar) için daha küçük limit
-        const isSquare = aspect === 1;
-        const maxWidth = isSquare ? 400 : 1200;
-        const maxHeight = isSquare ? 400 : 800;
-        
-        if (width > maxWidth || height > maxHeight) {
-            const ratio = Math.min(maxWidth / width, maxHeight / height);
-            width = Math.floor(width * ratio);
-            height = Math.floor(height * ratio);
-        }
+        // Orijinal kırpılmış boyutu koru - sunucu tarafında optimize edilecek
+        const width = pixelCrop.width;
+        const height = pixelCrop.height;
 
         canvas.width = width;
         canvas.height = height;
+
+        // Yüksek kaliteli rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
 
         ctx.drawImage(
             image,
@@ -99,7 +91,7 @@ export function ImageCropper({ image, onComplete, onCancel, aspect = 1, cropShap
                 }
 
                 try {
-                    const file = new File([blob], `cropped-${Date.now()}.webp`, { type: 'image/webp' });
+                    const file = new File([blob], `cropped-${Date.now()}.png`, { type: 'image/png' });
                     
                     const formData = new FormData();
                     formData.append('file', file);
@@ -119,7 +111,7 @@ export function ImageCropper({ image, onComplete, onCancel, aspect = 1, cropShap
                 } catch (error) {
                     reject(error);
                 }
-            }, 'image/webp', 0.75); // Kalite düşürüldü: 0.85 -> 0.75
+            }, 'image/png', 1.0); // PNG ile maksimum kalite - sunucu WebP'ye çevirecek
         });
     };
 
