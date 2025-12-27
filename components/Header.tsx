@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Menu, X, Search } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
@@ -18,12 +19,23 @@ export function Header() {
     };
     checkTheme();
     
-    // MutationObserver ile tema değişikliklerini dinle
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     
     return () => observer.disconnect();
   }, []);
+
+  // Menü açıkken scroll'u engelle
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const navigation = [
     { name: 'Şiir', href: '/siir' },
@@ -33,6 +45,42 @@ export function Header() {
     { name: 'Eleştiri', href: '/elestiri' },
     { name: 'Hakkımızda', href: '/hakkimizda' },
   ];
+
+  // Animasyon varyantları
+  const menuVariants = {
+    closed: {
+      opacity: 0,
+      height: 0,
+      transition: {
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1] as const,
+        when: "afterChildren" as const,
+      }
+    },
+    open: {
+      opacity: 1,
+      height: "auto",
+      transition: {
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1] as const,
+        when: "beforeChildren" as const,
+        staggerChildren: 0.05,
+      }
+    }
+  };
+
+  const itemVariants = {
+    closed: {
+      opacity: 0,
+      x: -16,
+      transition: { duration: 0.2 }
+    },
+    open: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.2 }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800">
@@ -84,43 +132,76 @@ export function Header() {
             </Link>
 
             {/* Mobile menu button */}
-            <button
+            <motion.button
               type="button"
               className="lg:hidden p-2 text-neutral-700 dark:text-neutral-300"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Menüyü aç"
+              aria-label={mobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
+              aria-expanded={mobileMenuOpen}
+              whileTap={{ scale: 0.95 }}
             >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
+              <AnimatePresence mode="wait">
+                {mobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="h-6 w-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="h-6 w-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden py-4 space-y-2 border-t border-neutral-200 dark:border-neutral-800">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="block px-4 py-2 text-base font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
-            <Link
-              href="/iletisim"
-              className="block mx-4 mt-4 px-4 py-2 text-center text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
+        {/* Mobile menu with animation */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              className="lg:hidden overflow-hidden"
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={menuVariants}
             >
-              Bize Yazın
-            </Link>
-          </div>
-        )}
+              <div className="py-4 space-y-1 border-t border-neutral-200 dark:border-neutral-800">
+                {navigation.map((item, index) => (
+                  <motion.div key={item.name} variants={itemVariants}>
+                    <Link
+                      href={item.href}
+                      className="block px-4 py-3 text-base font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  </motion.div>
+                ))}
+                <motion.div variants={itemVariants}>
+                  <Link
+                    href="/iletisim"
+                    className="block mx-4 mt-4 px-4 py-3 text-center text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Bize Yazın
+                  </Link>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </header>
   );
