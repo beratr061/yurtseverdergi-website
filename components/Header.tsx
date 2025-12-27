@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Menu, X, Search } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
@@ -39,11 +40,13 @@ export function Header() {
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={mounted && isDark ? "/logo-dark.svg" : "/logo.svg"}
               alt="YurtSever"
+              width={120}
+              height={48}
               className="h-12 w-auto"
+              priority
             />
           </Link>
 

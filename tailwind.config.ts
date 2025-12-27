@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
+      },
       screens: {
         'xs': '375px', // Extra small devices (iPhone SE, etc.)
       },

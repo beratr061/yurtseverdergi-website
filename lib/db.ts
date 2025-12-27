@@ -1,21 +1,32 @@
 import prisma from './prisma';
+import type { Article, User, Category, Settings, ArticleStatus, Prisma } from '@prisma/client';
 
 /**
- * Database helper functions
+ * Database helper functions with proper TypeScript types
  */
 
-// Articles
-export async function getArticles(filters?: {
-  status?: string;
+// Type definitions
+type ArticleWithRelations = Article & {
+  category: Category;
+  author: Pick<User, 'id' | 'name' | 'image' | 'slug' | 'bio' | 'role'>;
+};
+
+type ArticleFilters = {
+  status?: ArticleStatus;
   categoryId?: string;
   authorId?: string;
   limit?: number;
   offset?: number;
-}) {
-  const where: any = {};
+};
+
+type DbResult<T> = { data: T; error: null } | { data: null; error: unknown };
+
+// Articles
+export async function getArticles(filters?: ArticleFilters): Promise<DbResult<ArticleWithRelations[]>> {
+  const where: Prisma.ArticleWhereInput = {};
   
   if (filters?.status) {
-    where.status = filters.status as any;
+    where.status = filters.status;
   }
   if (filters?.categoryId) {
     where.categoryId = filters.categoryId;
@@ -24,29 +35,34 @@ export async function getArticles(filters?: {
     where.authorId = filters.authorId;
   }
 
-  const articles = await prisma.article.findMany({
-    where,
-    include: {
-      category: true,
-      author: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          slug: true,
-          bio: true,
+  try {
+    const articles = await prisma.article.findMany({
+      where,
+      include: {
+        category: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            slug: true,
+            bio: true,
+            role: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-    take: filters?.limit,
-    skip: filters?.offset,
-  });
+      orderBy: { createdAt: 'desc' },
+      take: filters?.limit,
+      skip: filters?.offset,
+    });
 
-  return { data: articles, error: null };
+    return { data: articles, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
 }
 
-export async function getArticleBySlug(slug: string) {
+export async function getArticleBySlug(slug: string): Promise<DbResult<ArticleWithRelations | null>> {
   try {
     const article = await prisma.article.findUnique({
       where: { slug },
@@ -70,7 +86,7 @@ export async function getArticleBySlug(slug: string) {
   }
 }
 
-export async function getArticleById(id: string) {
+export async function getArticleById(id: string): Promise<DbResult<ArticleWithRelations | null>> {
   try {
     const article = await prisma.article.findUnique({
       where: { id },
@@ -82,6 +98,8 @@ export async function getArticleById(id: string) {
             name: true,
             image: true,
             slug: true,
+            bio: true,
+            role: true,
           },
         },
       },
@@ -92,7 +110,7 @@ export async function getArticleById(id: string) {
   }
 }
 
-export async function createArticle(data: any) {
+export async function createArticle(data: Prisma.ArticleCreateInput): Promise<DbResult<Article>> {
   try {
     const article = await prisma.article.create({
       data,
@@ -107,7 +125,7 @@ export async function createArticle(data: any) {
   }
 }
 
-export async function updateArticle(id: string, data: any) {
+export async function updateArticle(id: string, data: Prisma.ArticleUpdateInput): Promise<DbResult<Article>> {
   try {
     const article = await prisma.article.update({
       where: { id },
@@ -123,7 +141,7 @@ export async function updateArticle(id: string, data: any) {
   }
 }
 
-export async function deleteArticle(id: string) {
+export async function deleteArticle(id: string): Promise<{ error: unknown | null }> {
   try {
     await prisma.article.delete({ where: { id } });
     return { error: null };
@@ -133,23 +151,23 @@ export async function deleteArticle(id: string) {
 }
 
 // Users (Writers)
-export async function getWriters(limit?: number) {
+export async function getWriters(limit?: number): Promise<DbResult<User[]>> {
   try {
     const writers = await prisma.user.findMany({
       where: {
         slug: { not: null },
-        role: { not: 'ADMIN' }, // Admin'leri hariç tut
+        role: { not: 'ADMIN' },
       },
       orderBy: { articleCount: 'desc' },
       take: limit,
     });
     return { data: writers, error: null };
   } catch (error) {
-    return { data: [], error };
+    return { data: null, error };
   }
 }
 
-export async function getWriterBySlug(slug: string) {
+export async function getWriterBySlug(slug: string): Promise<DbResult<User | null>> {
   try {
     const writer = await prisma.user.findUnique({
       where: { slug },
@@ -160,7 +178,7 @@ export async function getWriterBySlug(slug: string) {
   }
 }
 
-export async function getWriterById(id: string) {
+export async function getWriterById(id: string): Promise<DbResult<User | null>> {
   try {
     const writer = await prisma.user.findUnique({
       where: { id },
@@ -171,7 +189,7 @@ export async function getWriterById(id: string) {
   }
 }
 
-export async function getUserByEmail(email: string) {
+export async function getUserByEmail(email: string): Promise<DbResult<User | null>> {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
@@ -182,7 +200,7 @@ export async function getUserByEmail(email: string) {
   }
 }
 
-export async function createUser(data: any) {
+export async function createUser(data: Prisma.UserCreateInput): Promise<DbResult<User>> {
   try {
     const user = await prisma.user.create({ data });
     return { data: user, error: null };
@@ -191,7 +209,7 @@ export async function createUser(data: any) {
   }
 }
 
-export async function updateUser(id: string, data: any) {
+export async function updateUser(id: string, data: Prisma.UserUpdateInput): Promise<DbResult<User>> {
   try {
     const user = await prisma.user.update({
       where: { id },
@@ -203,7 +221,7 @@ export async function updateUser(id: string, data: any) {
   }
 }
 
-export async function deleteUser(id: string) {
+export async function deleteUser(id: string): Promise<{ error: unknown | null }> {
   try {
     await prisma.user.delete({ where: { id } });
     return { error: null };
@@ -212,24 +230,24 @@ export async function deleteUser(id: string) {
   }
 }
 
-// Writer aliases (writers are users with isWriter=true)
+// Writer aliases
 export const createWriter = createUser;
 export const updateWriter = updateUser;
 export const deleteWriter = deleteUser;
 
 // Categories
-export async function getCategories() {
+export async function getCategories(): Promise<DbResult<Category[]>> {
   try {
     const categories = await prisma.category.findMany({
       orderBy: { name: 'asc' },
     });
     return { data: categories, error: null };
   } catch (error) {
-    return { data: [], error };
+    return { data: null, error };
   }
 }
 
-export async function getCategoryBySlug(slug: string) {
+export async function getCategoryBySlug(slug: string): Promise<DbResult<Category | null>> {
   try {
     const category = await prisma.category.findUnique({
       where: { slug },
@@ -240,7 +258,7 @@ export async function getCategoryBySlug(slug: string) {
   }
 }
 
-export async function getCategoryById(id: string) {
+export async function getCategoryById(id: string): Promise<DbResult<Category | null>> {
   try {
     const category = await prisma.category.findUnique({
       where: { id },
@@ -251,7 +269,7 @@ export async function getCategoryById(id: string) {
   }
 }
 
-export async function createCategory(data: any) {
+export async function createCategory(data: Prisma.CategoryCreateInput): Promise<DbResult<Category>> {
   try {
     const category = await prisma.category.create({ data });
     return { data: category, error: null };
@@ -260,7 +278,7 @@ export async function createCategory(data: any) {
   }
 }
 
-export async function updateCategory(id: string, data: any) {
+export async function updateCategory(id: string, data: Prisma.CategoryUpdateInput): Promise<DbResult<Category>> {
   try {
     const category = await prisma.category.update({
       where: { id },
@@ -272,7 +290,7 @@ export async function updateCategory(id: string, data: any) {
   }
 }
 
-export async function deleteCategory(id: string) {
+export async function deleteCategory(id: string): Promise<{ error: unknown | null }> {
   try {
     await prisma.category.delete({ where: { id } });
     return { error: null };
@@ -282,19 +300,17 @@ export async function deleteCategory(id: string) {
 }
 
 // Settings Cache (60 saniye TTL)
-let settingsCache: { data: any; timestamp: number } | null = null;
-const SETTINGS_CACHE_TTL = 60 * 1000; // 60 saniye
+let settingsCache: { data: Settings; timestamp: number } | null = null;
+const SETTINGS_CACHE_TTL = 60 * 1000;
 
-export async function getSettings(skipCache = false) {
+export async function getSettings(skipCache = false): Promise<DbResult<Settings>> {
   try {
-    // Cache kontrolü
     if (!skipCache && settingsCache && Date.now() - settingsCache.timestamp < SETTINGS_CACHE_TTL) {
       return { data: settingsCache.data, error: null };
     }
 
     let settings = await prisma.settings.findFirst();
     
-    // Create default settings if none exist
     if (!settings) {
       settings = await prisma.settings.create({
         data: {
@@ -308,7 +324,6 @@ export async function getSettings(skipCache = false) {
       });
     }
     
-    // Cache'i güncelle
     settingsCache = { data: settings, timestamp: Date.now() };
     
     return { data: settings, error: null };
@@ -317,18 +332,16 @@ export async function getSettings(skipCache = false) {
   }
 }
 
-// Cache'i temizle (settings güncellendiğinde çağrılmalı)
-export function invalidateSettingsCache() {
+export function invalidateSettingsCache(): void {
   settingsCache = null;
 }
 
-export async function updateSettings(id: string, data: any) {
+export async function updateSettings(id: string, data: Prisma.SettingsUpdateInput): Promise<DbResult<Settings>> {
   try {
     const settings = await prisma.settings.update({
       where: { id },
       data,
     });
-    // Cache'i temizle
     invalidateSettingsCache();
     return { data: settings, error: null };
   } catch (error) {
@@ -337,9 +350,12 @@ export async function updateSettings(id: string, data: any) {
 }
 
 // Article Views
-export async function incrementArticleView(articleId: string, ipAddress: string, userAgent?: string) {
+export async function incrementArticleView(
+  articleId: string, 
+  ipAddress: string, 
+  userAgent?: string
+): Promise<DbResult<boolean>> {
   try {
-    // Check if view already exists
     const existing = await prisma.articleView.findUnique({
       where: {
         articleId_ipAddress: {
@@ -350,25 +366,24 @@ export async function incrementArticleView(articleId: string, ipAddress: string,
     });
 
     if (existing) {
-      return { data: null, error: null }; // Already viewed
+      return { data: false, error: null };
     }
 
-    // Create new view
-    await prisma.articleView.create({
-      data: {
-        articleId,
-        ipAddress,
-        userAgent,
-      },
-    });
-
-    // Increment article views count
-    await prisma.article.update({
-      where: { id: articleId },
-      data: {
-        views: { increment: 1 },
-      },
-    });
+    await prisma.$transaction([
+      prisma.articleView.create({
+        data: {
+          articleId,
+          ipAddress,
+          userAgent,
+        },
+      }),
+      prisma.article.update({
+        where: { id: articleId },
+        data: {
+          views: { increment: 1 },
+        },
+      }),
+    ]);
 
     return { data: true, error: null };
   } catch (error) {
@@ -377,7 +392,15 @@ export async function incrementArticleView(articleId: string, ipAddress: string,
 }
 
 // Dashboard Stats
-export async function getDashboardStats() {
+interface DashboardStats {
+  totalArticles: number;
+  publishedArticles: number;
+  totalUsers: number;
+  totalCategories: number;
+  totalViews: number;
+}
+
+export async function getDashboardStats(): Promise<DbResult<DashboardStats>> {
   try {
     const [
       totalArticles,

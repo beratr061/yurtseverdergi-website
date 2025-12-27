@@ -20,9 +20,53 @@ export function OrganizationJsonLd({
     description,
     sameAs: [
       'https://facebook.com/yurtseverdergi',
-      'https://twitter.com/yurtseverdergi',
+      'https://x.com/YurtseverDergi',
       'https://instagram.com/yurtseverdergi',
+      'https://youtube.com/@YurtseverDergi',
     ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
+interface WebSiteJsonLdProps {
+  name?: string;
+  url?: string;
+  description?: string;
+}
+
+export function WebSiteJsonLd({
+  name = 'YurtSever Dergi',
+  url = 'https://yurtsever.com',
+  description = 'Edebiyat ve Kültür Dergisi',
+}: WebSiteJsonLdProps) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name,
+    url,
+    description,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${url}/arama?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${url}/logo.png`,
+      },
+    },
   };
 
   return (

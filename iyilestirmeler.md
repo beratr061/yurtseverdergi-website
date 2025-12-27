@@ -1,59 +1,128 @@
-1. Dosya Yükleme (Upload) Kalıcılığı [En Önemli Madde]
-app/api/upload/route.ts dosyanız resimleri public/uploads klasörüne kaydediyor.
+# YurtSever Dergi - İyileştirmeler
 
-Sorun: İleride projeyi güncellemek için klasörü silip tekrar GitHub'dan çekerseniz (git pull veya clean install), yüklenen tüm resimler silinir.
+## ✅ Tamamlanan İyileştirmeler
 
-VDS Çözümü:
+### 1. Performans İyileştirmeleri
+- [x] `next.config.ts` - `framer-motion` ve `zod` optimizePackageImports'a eklendi
+- [x] `app/layout.tsx` - Next.js `next/font` ile Inter font optimizasyonu
+- [x] `tailwind.config.ts` - Font family CSS variable entegrasyonu
+- [x] `components/Header.tsx` - Next.js Image component kullanımı (priority ile)
+- [x] `components/Footer.tsx` - Next.js Image component kullanımı
 
-Sunucuda proje klasörünün dışında bir klasör açın: mkdir -p /var/www/yurtsever-uploads
+### 2. Güvenlik İyileştirmeleri
+- [x] `next.config.ts` - Security headers eklendi:
+  - X-DNS-Prefetch-Control
+  - Strict-Transport-Security (HSTS)
+  - X-Content-Type-Options
+  - X-Frame-Options
+  - X-XSS-Protection
+  - Referrer-Policy
+  - Permissions-Policy
+- [x] `lib/rate-limit.ts` - Upstash Redis desteği eklendi (fallback: in-memory)
 
-Projenizin içindeki public/uploads klasörünü silin.
+### 3. SEO İyileştirmeleri
+- [x] `components/JsonLd.tsx` - WebSiteJsonLd schema eklendi (SearchAction ile)
+- [x] `app/(public)/page.tsx` - WebSiteJsonLd ana sayfaya eklendi
+- [x] Social media linkleri güncellendi (X/Twitter, YouTube)
 
-Onun yerine bir "Sembolik Link" (Kısayol) oluşturun:
+### 4. Kod Kalitesi
+- [x] `lib/db.ts` - TypeScript tipleri eklendi (any kaldırıldı)
+- [x] `lib/api-response.ts` - Standart API response helper'ları
+- [x] `lib/schemas.ts` - Merkezi Zod validation schema'ları
 
-Bash
+### 5. Error Handling
+- [x] `app/(public)/error.tsx` - Public sayfa error boundary
+- [x] `app/global-error.tsx` - Global error handler
 
+### 6. DevOps
+- [x] `app/api/health/route.ts` - Health check endpoint (database + redis status)
+
+### 7. Accessibility (Erişilebilirlik)
+- [x] `app/globals.css` - Skip link stili
+- [x] `app/(public)/layout.tsx` - Skip to main content link
+- [x] `components/Footer.tsx` - Newsletter form accessibility (label, aria attributes)
+
+---
+
+## 📋 Deployment Kontrol Listesi
+
+### VDS Hazırlığı
+- [ ] Node.js 20+ kurulu mu?
+- [ ] Nginx kurulu ve yapılandırılmış mı?
+- [ ] PostgreSQL kurulu ve çalışıyor mu?
+- [ ] PM2 kurulu mu?
+
+### Dosya Yükleme Kalıcılığı
+```bash
+# Sunucuda proje dışında upload klasörü oluştur
+mkdir -p /var/www/yurtsever-uploads
+
+# Sembolik link oluştur
 ln -s /var/www/yurtsever-uploads /var/www/proje-klasoru/public/uploads
-Bu sayede kodunuz public/uploads'a yazdığını sanır ama dosyalar aslında güvenli bir dış klasörde tutulur. Siteyi silip tekrar yükleseniz de resimler gitmez.
+```
 
-2. Next.js Konfigürasyonu (Standalone Mod)
-VDS performansını artırmak için next.config.ts dosyasına şu satırı eklemenizi şiddetle öneririm:
+### Environment Variables (.env)
+```env
+# Database
+STORAGE_POSTGRES_URL="postgresql://user:password@localhost:5432/yurtsever_db"
 
-TypeScript
+# Auth
+AUTH_SECRET="rastgele-uzun-gizli-anahtar"
+AUTH_URL="https://siteniz.com"
 
-const nextConfig: NextConfig = {
-  output: 'standalone', // <--- BU SATIRI EKLEYİN
-  // ... diğer ayarlarınız aynı kalsın
-}
-Neden? Bu ayar, next build aldığınızda sadece ve sadece projenin çalışması için gereken dosyaları içeren minimal bir klasör (.next/standalone) oluşturur. Bu, sunucuyu (RAM ve Disk) çok daha verimli kullanır.
+# Upstash Redis (Opsiyonel - Rate Limiting için)
+UPSTASH_REDIS_REST_URL="https://xxx.upstash.io"
+UPSTASH_REDIS_REST_TOKEN="xxx"
 
-3. Environment Variables (.env) Dosyası
-VDS'e dosyaları attıktan sonra, proje ana dizininde .env dosyası oluşturup şunları girmelisiniz:
+# reCAPTCHA (Opsiyonel)
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=""
+RECAPTCHA_SECRET_KEY=""
 
-Kod snippet'i
+# Site URL
+NEXT_PUBLIC_SITE_URL="https://siteniz.com"
+```
 
-# Veritabanı (VDS içinde MongoDB kuruluysa)
-DATABASE_URL="mongodb://localhost:27017/yurtsever_db?replicaSet=rs0" 
-# Not: Prisma MongoDB için Replica Set gerektirir, kurulumda bunu açmayı unutmayın.
+### Build ve Deploy
+```bash
+# Dependencies
+npm ci
 
-# Auth Ayarları
-NEXTAUTH_SECRET="buraya-rastgele-uzun-bir-sifre-yaz"
-NEXTAUTH_URL="https://siteniz.com" # VDS'e bağladığınız domain
+# Prisma generate
+npm run db:generate
 
-# Varsa SMTP (Mail) Ayarları
-# (Davet sistemi için gerekli olabilir)
-4. Build Komutu ve Prisma
-package.json dosyanızda build komutu: "build": "prisma generate && next build --webpack" şeklinde.
+# Build
+npm run build
 
-Düzeltme: --webpack bayrağına (flag) genelde gerek yoktur, Next.js varsayılan derleyicisiyle daha iyi çalışır. Komutu "prisma generate && next build" olarak sadeleştirebilirsiniz.
+# PM2 ile başlat
+pm2 start npm --name "yurtsever" -- start
+```
 
-Deploy Kontrol Listesi (Checklist)
-[ ] VDS Hazırlığı: Node.js 20+, Nginx, MongoDB, PM2 kurulu mu?
+### Health Check
+Deploy sonrası `/api/health` endpoint'ini kontrol edin:
+```bash
+curl https://siteniz.com/api/health
+```
 
-[ ] MongoDB Replica Set: Prisma'nın çalışması için MongoDB'nin "Replica Set" modunda çalışması şarttır. (Tek sunucu olsa bile).
+---
 
-[ ] Upload Klasörü: Yukarıdaki sembolik link (symlink) ayarı yapıldı mı?
+## 🔮 Gelecek İyileştirmeler (Opsiyonel)
 
-[ ] Build: Sunucu içinde npm run build hatasız tamamlanıyor mu?
+### Performans
+- [ ] Dynamic OG Image generation (Next.js ImageResponse API)
+- [ ] Service Worker / PWA desteği
+- [ ] Edge caching stratejisi
 
-[ ] Process: pm2 start npm --name "dergi" -- start komutuyla site ayağa kalktı mı?
+### Güvenlik
+- [ ] CSRF token implementasyonu
+- [ ] Rate limiting tüm API'lere genişletme
+- [ ] Audit logging genişletme
+
+### Monitoring
+- [ ] Sentry error tracking entegrasyonu
+- [ ] Performance monitoring (Web Vitals)
+- [ ] Uptime monitoring
+
+### SEO
+- [ ] Dinamik sitemap genişletme
+- [ ] RSS feed
+- [ ] AMP sayfaları (opsiyonel)

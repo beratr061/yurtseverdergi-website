@@ -2,7 +2,7 @@ import { Hero } from '@/components/Hero';
 import { FeaturedArticles } from '@/components/FeaturedArticles';
 import { LatestPosts } from '@/components/LatestPosts';
 import { Writers } from '@/components/Writers';
-import { OrganizationJsonLd } from '@/components/JsonLd';
+import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/JsonLd';
 import { getArticles, getWriters } from '@/lib/db';
 import { checkMaintenanceMode } from '@/lib/maintenance-check';
 import { checkAndRedirectInvitationMode } from '@/lib/invitation-check';
@@ -85,7 +85,11 @@ export default async function Home() {
             logo={`${siteUrl}/logo.png`}
             description="Edebiyat ve Kültür Dergisi - Şiir, eleştiri, söyleşi ve poetika içerikleri"
           />
-          {/* Next.js Image priority={true} otomatik preload yapar, manuel preload gereksiz */}
+          <WebSiteJsonLd
+            name="YurtSever Dergi"
+            url={siteUrl}
+            description="Edebiyat ve Kültür Dergisi - Şiir, eleştiri, söyleşi ve poetika içerikleri"
+          />
           
           <Hero articles={heroArticles} />
           <FeaturedArticles articles={featuredArticles} />

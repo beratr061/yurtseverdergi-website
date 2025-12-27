@@ -27,6 +27,22 @@
   h6 {
     font-weight: 700;
   }
+
+  /* Skip to main content link for accessibility */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #e11d48;
+    color: white;
+    padding: 8px 16px;
+    z-index: 100;
+    transition: top 0.3s;
+  }
+
+  .skip-link:focus {
+    top: 0;
+  }
 }
 
 @layer utilities {

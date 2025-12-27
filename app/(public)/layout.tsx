@@ -15,8 +15,14 @@ export default async function PublicLayout({
     
     return (
         <>
+            {/* Skip to main content link for accessibility */}
+            <a href="#main-content" className="skip-link">
+                Ana içeriğe geç
+            </a>
             {showHeaderFooter && <Header />}
-            {children}
+            <div id="main-content">
+                {children}
+            </div>
             {showHeaderFooter && <Footer />}
         </>
     );

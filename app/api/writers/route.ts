@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getWriters, createWriter, updateWriter } from '@/lib/db';
+import { createWriter, updateWriter } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,16 +11,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, slug, role, bio, fullBio, image, birthYear, education, awards } = body;
+    const { name, slug, role, bio, fullBio, image, education, awards, email, hashedPassword } = body;
 
     const { data: writer, error } = await createWriter({
       name,
+      email: email || `${slug}@yurtsever.com`,
+      hashedPassword: hashedPassword || '',
       slug,
       role,
       bio,
       fullBio,
       image,
-      birthYear: birthYear || null,
       education: education || null,
       awards: awards || [],
     });
@@ -45,7 +46,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, slug, role, bio, fullBio, image, birthYear, education, awards } = body;
+    const { id, name, slug, role, bio, fullBio, image, education, awards } = body;
 
     const { data: writer, error } = await updateWriter(id, {
       name,
@@ -54,7 +55,6 @@ export async function PUT(request: NextRequest) {
       bio,
       fullBio,
       image,
-      birthYear: birthYear || null,
       education: education || null,
       awards: awards || [],
     });

@@ -1,26 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Facebook, Instagram, Youtube, Mail } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    checkTheme();
-    
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    
-    return () => observer.disconnect();
-  }, []);
 
   const navigation = {
     main: [
@@ -55,10 +40,11 @@ export function Footer() {
           {/* Brand Section */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={mounted && isDark ? "/logo-dark.svg" : "/logo-dark.svg"}
+              <Image
+                src="/logo-dark.svg"
                 alt="YurtSever"
+                width={100}
+                height={40}
                 className="h-10 w-auto"
               />
             </Link>
@@ -97,15 +83,25 @@ export function Footer() {
             <p className="text-sm mb-4">
               Yeni yazılarımızdan ve duyurularımızdan haberdar olun.
             </p>
-            <form className="space-y-2">
-              <input
-                type="email"
-                placeholder="E-posta adresiniz"
-                className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-600 focus:border-transparent"
-              />
+            <form className="space-y-2" aria-label="E-bülten aboneliği">
+              <div>
+                <label htmlFor="newsletter-email" className="sr-only">
+                  E-posta adresiniz
+                </label>
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  name="email"
+                  placeholder="E-posta adresiniz"
+                  autoComplete="email"
+                  required
+                  aria-required="true"
+                  className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-600 focus:border-transparent"
+                />
+              </div>
               <button
                 type="submit"
-                className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+                className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-neutral-900"
               >
                 Abone Ol
               </button>

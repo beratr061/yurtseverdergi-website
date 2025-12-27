@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
+
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yurtsever.com";
 
@@ -73,7 +80,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="tr" suppressHydrationWarning data-scroll-behavior="smooth" className={inter.variable}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -93,8 +100,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className="antialiased bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
-        style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
+        className="antialiased bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 font-sans"
       >
         <ToastProvider />
         {children}
