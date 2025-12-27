@@ -6,6 +6,10 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yurtsever.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
   title: {
     default: "YurtSever Dergi - Edebiyat ve Kültür Dergisi",
     template: "%s | YurtSever Dergi",
