@@ -132,7 +132,10 @@ export async function POST(request: NextRequest) {
       optimizedSize: optimizedBuffer.length,
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    // Production'da daha detaylı loglama
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    console.error('Upload error:', { message: errorMessage, stack: errorStack });
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

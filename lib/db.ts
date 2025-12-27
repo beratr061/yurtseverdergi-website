@@ -281,9 +281,17 @@ export async function deleteCategory(id: string) {
   }
 }
 
-// Settings
-export async function getSettings() {
+// Settings Cache (60 saniye TTL)
+let settingsCache: { data: any; timestamp: number } | null = null;
+const SETTINGS_CACHE_TTL = 60 * 1000; // 60 saniye
+
+export async function getSettings(skipCache = false) {
   try {
+    // Cache kontrolü
+    if (!skipCache && settingsCache && Date.now() - settingsCache.timestamp < SETTINGS_CACHE_TTL) {
+      return { data: settingsCache.data, error: null };
+    }
+
     let settings = await prisma.settings.findFirst();
     
     // Create default settings if none exist
@@ -300,10 +308,18 @@ export async function getSettings() {
       });
     }
     
+    // Cache'i güncelle
+    settingsCache = { data: settings, timestamp: Date.now() };
+    
     return { data: settings, error: null };
   } catch (error) {
     return { data: null, error };
   }
+}
+
+// Cache'i temizle (settings güncellendiğinde çağrılmalı)
+export function invalidateSettingsCache() {
+  settingsCache = null;
 }
 
 export async function updateSettings(id: string, data: any) {
@@ -312,6 +328,8 @@ export async function updateSettings(id: string, data: any) {
       where: { id },
       data,
     });
+    // Cache'i temizle
+    invalidateSettingsCache();
     return { data: settings, error: null };
   } catch (error) {
     return { data: null, error };

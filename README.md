@@ -53,11 +53,11 @@
 
 | Kategori | Teknoloji |
 |----------|-----------|
-| **Framework** | Next.js 15 (App Router) |
+| **Framework** | Next.js 16 (App Router) |
 | **Dil** | TypeScript |
-| **Veritabanı** | PostgreSQL |
+| **Veritabanı** | MongoDB |
 | **ORM** | Prisma |
-| **Kimlik Doğrulama** | NextAuth.js |
+| **Kimlik Doğrulama** | NextAuth.js v5 (Beta) |
 | **Stil** | Tailwind CSS |
 | **İkonlar** | Lucide React |
 | **Test** | Vitest + Testing Library |
@@ -69,7 +69,7 @@
 ### Gereksinimler
 
 - Node.js 18+
-- PostgreSQL veritabanı
+- MongoDB veritabanı (Atlas veya self-hosted)
 - npm veya yarn
 
 ### Kurulum
@@ -91,12 +91,16 @@ cp .env.example .env
 `.env` dosyasını düzenleyin:
 
 ```env
-# Veritabanı
-DATABASE_URL="postgresql://user:password@localhost:5432/yurtsever"
+# Veritabanı (MongoDB)
+DATABASE_URL="mongodb+srv://user:password@cluster.mongodb.net/yurtsever?retryWrites=true&w=majority"
 
 # NextAuth
-NEXTAUTH_SECRET="your-super-secret-key"
+NEXTAUTH_SECRET="your-super-secret-key-min-32-chars"
 NEXTAUTH_URL="http://localhost:3000"
+
+# Upstash Redis (Rate Limiting için - opsiyonel)
+UPSTASH_REDIS_REST_URL="your-upstash-url"
+UPSTASH_REDIS_REST_TOKEN="your-upstash-token"
 ```
 
 ### Veritabanı Kurulumu
