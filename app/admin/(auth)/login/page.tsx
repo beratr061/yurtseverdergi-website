@@ -110,14 +110,12 @@ export default function LoginPage() {
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between p-4 lg:p-6">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg">
-            <PenTool className="h-6 w-6 lg:h-8 lg:w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg lg:text-xl font-bold text-white">YurtSever Dergi</h1>
-            <p className="text-primary-200 text-xs lg:text-sm">İçerik Yönetim Sistemi</p>
-          </div>
+        <div className="flex items-center">
+          <img 
+            src="/yurtsever-icerik-yonetim.svg" 
+            alt="YurtSever İçerik Yönetim Sistemi" 
+            className="h-12 lg:h-16 w-auto"
+          />
         </div>
 
         {/* Sosyal Medya - Desktop */}
