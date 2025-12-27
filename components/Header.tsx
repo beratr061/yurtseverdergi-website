@@ -1,12 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Menu, X, Search, PenTool } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, Search } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    checkTheme();
+    
+    // MutationObserver ile tema değişikliklerini dinle
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
 
   const navigation = [
     { name: 'Şiir', href: '/siir' },
@@ -22,9 +38,13 @@ export function Header() {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <PenTool className="h-8 w-8 text-primary-600 group-hover:text-primary-500 transition-colors" />
-            <span className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">YurtSever</span>
+          <Link href="/" className="flex items-center group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={mounted && isDark ? "/logo-dark.svg" : "/logo.svg"}
+              alt="YurtSever"
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}

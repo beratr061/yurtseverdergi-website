@@ -1,8 +1,26 @@
+'use client';
+
 import Link from 'next/link';
-import { Facebook, Instagram, Youtube, Mail, PenTool } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    checkTheme();
+    
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
 
   const navigation = {
     main: [
@@ -36,9 +54,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Brand Section */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2 group">
-              <PenTool className="h-8 w-8 text-white" />
-              <span className="text-2xl font-bold text-white">YurtSever</span>
+            <Link href="/" className="flex items-center group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={mounted && isDark ? "/logo-dark.svg" : "/logo-dark.svg"}
+                alt="YurtSever"
+                className="h-10 w-auto"
+              />
             </Link>
             <p className="text-sm leading-relaxed">
               Edebiyat ve kültür dünyasının nabzını tutan, şiir ve yazının gücüne inanan bir dergi.

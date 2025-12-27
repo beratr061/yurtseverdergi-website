@@ -37,13 +37,16 @@ export function Hero({ articles }: HeroProps) {
     setCurrentSlide((prev) => (prev - 1 + articles.length) % articles.length);
   };
 
-  // Auto-advance slides
+  // Auto-advance slides - currentSlide değiştiğinde timer sıfırlanır
   useEffect(() => {
+    if (articles.length <= 1) return;
+    
     const timer = setInterval(() => {
-      nextSlide();
+      setCurrentSlide((prev) => (prev + 1) % articles.length);
     }, 5000);
+    
     return () => clearInterval(timer);
-  }, [articles.length]);
+  }, [currentSlide, articles.length]);
 
   if (articles.length === 0) {
     return null;
