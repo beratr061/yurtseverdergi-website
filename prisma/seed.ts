@@ -156,12 +156,10 @@ async function main() {
   });
 
   // Create default settings
-  const defaultSettingsId = '000000000000000000000001';
   await prisma.settings.upsert({
-    where: { id: defaultSettingsId },
+    where: { id: '00000000-0000-0000-0000-000000000001' },
     update: {},
     create: {
-      id: defaultSettingsId,
       siteTitle: 'YurtSever Dergi',
       siteDescription: 'Edebiyat ve kültür dergisi',
       contactEmail: 'info@yurtsever.com',

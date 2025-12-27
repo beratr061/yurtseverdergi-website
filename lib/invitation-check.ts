@@ -73,7 +73,10 @@ export async function checkInvitationMode(): Promise<InvitationCheckResult> {
       settings: invitationSettings,
     };
   } catch (error) {
-    console.error('Invitation mode check error:', error);
+    // Build sırasında static generation denemesinde bu hata normal
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Invitation mode check error:', error);
+    }
     return {
       isInvitationMode: false,
       isAdmin: false,
@@ -105,7 +108,10 @@ export async function checkAndRedirectInvitationMode(): Promise<InvitationSettin
       invitationSettings = result.settings;
     }
   } catch (error) {
-    console.error('Invitation redirect check error:', error);
+    // Build sırasında static generation denemesinde bu hata normal
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Invitation redirect check error:', error);
+    }
   }
   
   // redirect must be called outside try-catch
@@ -145,7 +151,10 @@ export async function getInvitationSettings(): Promise<InvitationSettings | null
       invitationFacebookUrl: settings.invitationFacebookUrl ?? null,
     };
   } catch (error) {
-    console.error('Get invitation settings error:', error);
+    // Build sırasında static generation denemesinde bu hata normal
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Get invitation settings error:', error);
+    }
     return null;
   }
 }

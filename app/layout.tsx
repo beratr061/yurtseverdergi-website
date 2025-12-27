@@ -1,21 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
-
-const geist = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap", // Font yüklenene kadar sistem fontu göster (CLS önleme)
-  preload: true,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false, // Mono font kritik değil, lazy load
-});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yurtsever.com";
 
@@ -104,7 +89,8 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geist.variable} ${geistMono.variable} antialiased bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100`}
+        className="antialiased bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
+        style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
       >
         <ToastProvider />
         {children}

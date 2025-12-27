@@ -54,7 +54,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
-export default auth(async function middleware(request: NextRequest) {
+export default auth(async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Static files ve API için sadece security headers

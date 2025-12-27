@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone', // VDS için minimal build çıktısı
   images: {
     remotePatterns: [
       {

@@ -3,13 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 // Kullanıcılar (Admin, Editor, Writer)
 model User {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  id             String    @id @default(uuid())
   email          String    @unique
   name           String
   hashedPassword String
@@ -31,7 +31,7 @@ model User {
 
 // Kategoriler
 model Category {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(uuid())
   slug        String    @unique
   name        String
   description String?
@@ -45,7 +45,7 @@ model Category {
 
 // Yazılar/Şiirler
 model Article {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  id               String        @id @default(uuid())
   slug             String        @unique
   title            String
   excerpt          String
@@ -59,17 +59,18 @@ model Article {
 
   // Editorial Workflow
   rejectionReason  String?
-  reviewedBy       String?       @db.ObjectId
+  reviewedBy       String?
   reviewedAt       DateTime?
   submittedAt      DateTime?
 
-  authorId   String   @db.ObjectId
+  authorId   String
   author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  categoryId String   @db.ObjectId
+  categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
   versions   ArticleVersion[]
+  articleViews ArticleView[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -82,15 +83,15 @@ model Article {
 
 // Yazı Versiyonları (Geçmiş)
 model ArticleVersion {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  articleId String   @db.ObjectId
+  id        String   @id @default(uuid())
+  articleId String
   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   title     String
   excerpt   String
   content   String
   version   Int
-  changedBy String   @db.ObjectId
+  changedBy String
   changeNote String?
 
   createdAt DateTime @default(now())
@@ -102,8 +103,8 @@ model ArticleVersion {
 
 // Bildirimler
 model Notification {
-  id        String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String           @db.ObjectId
+  id        String           @id @default(uuid())
+  userId    String
   type      NotificationType
   title     String
   message   String
@@ -119,12 +120,12 @@ model Notification {
 
 // Aktivite Logları
 model ActivityLog {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String       @db.ObjectId
+  id          String       @id @default(uuid())
+  userId      String
   userName    String
   action      ActivityType
   entityType  String       // article, user, category, media, settings
-  entityId    String?      @db.ObjectId
+  entityId    String?
   entityTitle String?
   details     String?
   ipAddress   String?
@@ -139,8 +140,9 @@ model ActivityLog {
 
 // Makale Görüntülenmeleri (IP bazlı)
 model ArticleView {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  articleId String   @db.ObjectId
+  id        String   @id @default(uuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
   ipAddress String
   userAgent String?
   viewedAt  DateTime @default(now())
@@ -152,7 +154,7 @@ model ArticleView {
 
 // Site Ayarları
 model Settings {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String   @id @default(uuid())
   siteTitle          String   @default("YurtSever Dergi")
   siteDescription    String   @default("Edebiyat ve kültür dergisi")
   contactEmail       String   @default("info@yurtsever.com")
@@ -178,7 +180,7 @@ model Settings {
 
 // Davet E-postaları (Invitation Mode)
 model InvitationEmail {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(uuid())
   email        String   @unique
   subscribedAt DateTime @default(now())
 
@@ -188,16 +190,16 @@ model InvitationEmail {
 
 // Login Logları (Güvenlik)
 model LoginLog {
-  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  id             String           @id @default(uuid())
   type           LoginAttemptType
   email          String
   ipAddress      String?
   createdAtLocal String?          // Türkiye saati (okunabilir format)
-  userAgent String?
-  success   Boolean
-  details   String?
-  userId    String?        @db.ObjectId
-  createdAt DateTime       @default(now())
+  userAgent      String?
+  success        Boolean
+  details        String?
+  userId         String?
+  createdAt      DateTime         @default(now())
 
   @@index([email])
   @@index([ipAddress])
@@ -216,6 +218,7 @@ enum LoginAttemptType {
   ACCOUNT_LOCKED
   RECAPTCHA_FAILED
 }
+
 enum Role {
   ADMIN
   WRITER

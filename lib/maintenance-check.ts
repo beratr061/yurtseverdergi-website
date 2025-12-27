@@ -18,8 +18,10 @@ export async function checkMaintenanceMode() {
       shouldRedirect = true;
     }
   } catch (error) {
-    // Hata durumunda devam et
-    console.error('Maintenance check error:', error);
+    // Build sırasında static generation denemesinde bu hata normal
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Maintenance check error:', error);
+    }
   }
   
   // redirect'i try-catch dışında çağır
