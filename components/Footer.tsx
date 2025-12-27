@@ -41,7 +41,7 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center group">
               <Image
-                src="/logo-dark.svg"
+                src="/images/logos/logo-dark.svg"
                 alt="YurtSever"
                 width={100}
                 height={40}

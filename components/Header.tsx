@@ -41,7 +41,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center group">
             <Image
-              src={mounted && isDark ? "/logo-dark.svg" : "/logo.svg"}
+              src={mounted && isDark ? "/images/logos/logo-dark.svg" : "/images/logos/logo.svg"}
               alt="YurtSever"
               width={120}
               height={48}

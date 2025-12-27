@@ -8,7 +8,7 @@ interface OrganizationJsonLdProps {
 export function OrganizationJsonLd({
   name = 'YurtSever Dergi',
   url = 'https://yurtsever.com',
-  logo = 'https://yurtsever.com/logo.png',
+  logo = 'https://yurtsever.com/images/logos/logo.svg',
   description = 'Edebiyat ve Kültür Dergisi',
 }: OrganizationJsonLdProps) {
   const jsonLd = {
@@ -64,7 +64,7 @@ export function WebSiteJsonLd({
       name,
       logo: {
         '@type': 'ImageObject',
-        url: `${url}/logo.png`,
+        url: `${url}/images/logos/logo.svg`,
       },
     },
   };
@@ -117,7 +117,7 @@ export function ArticleJsonLd({
       name: 'YurtSever Dergi',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://yurtsever.com/logo.png',
+        url: 'https://yurtsever.com/images/logos/logo.svg',
       },
     },
     mainEntityOfPage: {

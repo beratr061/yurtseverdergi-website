@@ -112,7 +112,7 @@ export default function LoginPage() {
       <header className="relative z-10 flex items-center justify-between p-4 lg:p-6">
         <div className="flex items-center">
           <img 
-            src="/yurtsever-icerik-yonetim.svg" 
+            src="/images/logos/yurtsever-icerik-yonetim.svg" 
             alt="YurtSever İçerik Yönetim Sistemi" 
             className="h-12 lg:h-16 w-auto"
           />

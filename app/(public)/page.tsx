@@ -82,7 +82,7 @@ export default async function Home() {
           <OrganizationJsonLd
             name="YurtSever Dergi"
             url={siteUrl}
-            logo={`${siteUrl}/logo.png`}
+            logo={`${siteUrl}/images/logos/logo.svg`}
             description="Edebiyat ve Kültür Dergisi - Şiir, eleştiri, söyleşi ve poetika içerikleri"
           />
           <WebSiteJsonLd
